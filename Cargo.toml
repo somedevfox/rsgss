@@ -1,0 +1,43 @@
+[package]
+name = "rsgss"
+version = "0.1.0"
+edition = "2021"
+license = "GPLv3"
+authors = [
+	"Lily Lyons <lily@nowaffles.com>",
+	"Egor Poleshko <somedevfox@gmail.com>"
+]
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+tokio = { version = "1.21.2", features = ["full"] }          							# Asynchronous I/O
+winit = "0.27.3"         									 							# Window Creation and Management
+wgpu = "0.14.0"          									 							# Graphics Rendering
+image = { version = "0.24.4", default-features = false, features = ["png", "jpeg"] }    # Image Loading
+figment = { version = "0.10.8", features = ["env", "toml"] } 							# Configuration File Loader
+serde = { version = "1", features = ["derive"] }             							# (De)serialization
+magnus = { version = "0.3.2", features = ["embed"] }         							# Bindings to Matz' Ruby Interpreter
+rfd = "0.10"                                                 							# File Dialog and Message Boxes
+once_cell = "1.15.0"
+bytemuck = { version = "1.4", features = [ "derive" ] }
+parking_lot = "0.12.1"
+
+[features]
+image-ico        = ["image/ico"]
+image-pnm        = ["image/pnm"]
+image-tga        = ["image/tga"]
+image-tiff       = ["image/tiff"]
+image-webp       = ["image/webp"]
+image-bmp        = ["image/bmp"]
+image-hdr        = ["image/hdr"]
+image-dxt        = ["image/dxt"]
+image-dds        = ["image/dds"]
+image-farbfeld   = ["image/farbfeld"]
+image-jpeg-rayon = ["image/jpeg_rayon"]
+image-openexr    = ["image/openexr"]
+image-avif       = ["image/avif"]
+
+figment-json     = ["figment/json"]
+
+file-picker      = []
