@@ -22,8 +22,18 @@ fn graphics_update() {
     get_graphics().update();
 }
 
+fn graphics_frame_rate() -> u8 {
+    *get_graphics().frame_rate.read()
+}
+
+fn graphics_frame_rate_set(frame_rate: u8) {
+    *get_graphics().frame_rate.write() = frame_rate;
+}
+
 pub fn bind() -> Result<(), magnus::Error> {
     let module = define_module("Graphics")?;
     module.define_module_function("update", function!(graphics_update, 0))?;
+    module.define_module_function("frame_rate", function!(graphics_frame_rate, 0))?;
+    module.define_module_function("frame_rate=", function!(graphics_frame_rate_set, 1))?;
     Ok(())
 }

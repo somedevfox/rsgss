@@ -43,6 +43,7 @@ pub struct Graphics {
     pub viewports: RwLock<Vec<Weak<RwLock<Viewport>>>>,
 
     last_frame: RwLock<Instant>,
+    pub frame_rate: RwLock<u8>,
 }
 impl Graphics {
     pub async fn create_window(
@@ -118,17 +119,24 @@ impl Graphics {
             viewports: RwLock::new(vec![window_viewport]),
 
             last_frame: RwLock::new(Instant::now()),
+            frame_rate: RwLock::new(40),
         }
     }
 
     pub fn update(&self) {
         let mut last_frame = self.last_frame.write();
-        let current_frame = Instant::now();
-        let delta = current_frame.duration_since(*last_frame);
-        println!("[Frame delta] {:#?}", delta);
-        std::thread::sleep(Duration::from_secs_f64(1. / 60.).saturating_sub(delta));
+        let frame_rate = self.frame_rate.read();
 
-        *last_frame = current_frame;
+        let delta = Instant::now().duration_since(*last_frame);
+        let duration = Duration::from_secs_f64(1. / *frame_rate as f64).saturating_sub(delta);
+        println!("[Frame delta] {:#?}", delta);
+        println!(
+            "Sleeping {}ms to compensate",
+            duration.as_secs_f64() * 1000.
+        );
+        std::thread::sleep(duration);
+
+        *last_frame = Instant::now();
 
         self.viewports.write().retain(|viewport| {
             if let Some(viewport) = viewport.upgrade() {
