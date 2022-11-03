@@ -14,6 +14,7 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with rsgss.  If not, see <http://www.gnu.org/licenses/>.
+pub mod bitmap_binding;
 #[cfg(feature = "file-picker")]
 pub mod filepicker_binding;
 pub mod graphics_binding;
@@ -26,6 +27,7 @@ pub fn bind() -> Result<(), magnus::Error> {
     graphics_binding::bind()?;
     viewport_binding::bind()?;
     sprite_binding::bind()?;
+    bitmap_binding::bind()?;
 
     Ok(())
 }

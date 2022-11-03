@@ -20,7 +20,7 @@ use magnus::{function, method, Module, Object, RTypedData, Value};
 use parking_lot::RwLock;
 use std::sync::Arc;
 
-use super::viewport_binding::BoundViewport;
+use super::{bitmap_binding::BoundBitmap, viewport_binding::BoundViewport};
 
 #[magnus::wrap(class = "Sprite", free_immediatly, size)]
 struct BoundSprite {
@@ -62,6 +62,19 @@ impl BoundSprite {
 
         Ok(())
     }
+
+    pub fn set_bitmap(rb_self: Value, bitmap: Value) -> Result<(), magnus::Error> {
+        let rb_self = RTypedData::from_value(rb_self).unwrap();
+
+        rb_self.try_convert::<&Self>()?.sprite.write().bitmap = bitmap
+            .try_convert::<Option<&_>>()?
+            .cloned()
+            .map(BoundBitmap::into);
+
+        rb_self.ivar_set("@bitmap", bitmap)?;
+
+        Ok(())
+    }
 }
 
 pub fn bind() -> Result<(), magnus::Error> {
@@ -69,6 +82,7 @@ pub fn bind() -> Result<(), magnus::Error> {
     class.define_singleton_method("new", function!(BoundSprite::new_rb, -1))?;
     class.define_method("viewport=", method!(BoundSprite::set_viewport, 1))?;
     class.define_attr("viewport", magnus::Attr::Read)?;
+    class.define_method("bitmap=", method!(BoundSprite::set_bitmap, 1))?;
     class.define_attr("bitmap", magnus::Attr::Read)?;
 
     Ok(())
