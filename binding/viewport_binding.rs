@@ -22,8 +22,21 @@ use magnus::{define_class, function, method, Module, Object};
 use parking_lot::RwLock;
 
 #[magnus::wrap(class = "Viewport", free_immediatly, size)]
-struct BoundViewport {
+#[derive(Clone)]
+pub struct BoundViewport {
     viewport: Arc<RwLock<Viewport>>,
+}
+
+impl From<Arc<RwLock<Viewport>>> for BoundViewport {
+    fn from(value: Arc<RwLock<Viewport>>) -> Self {
+        Self { viewport: value }
+    }
+}
+
+impl From<BoundViewport> for Arc<RwLock<Viewport>> {
+    fn from(value: BoundViewport) -> Self {
+        value.viewport
+    }
 }
 
 impl BoundViewport {

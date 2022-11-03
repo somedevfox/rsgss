@@ -55,7 +55,7 @@ impl Graphics {
         // Create Window
         let size = PhysicalSize::new(width, height);
         let window = WindowBuilder::new()
-            .with_inner_size(size.clone())
+            .with_inner_size(size)
             .with_title(title.clone())
             .build(event_loop)
             .unwrap();

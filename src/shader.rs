@@ -21,7 +21,7 @@ use crate::{
 };
 use std::borrow::Cow;
 
-#[derive(PartialEq)]
+#[derive(PartialEq, Eq)]
 pub enum ShaderType {
     Vertex,
     Fragment,

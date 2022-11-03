@@ -22,21 +22,14 @@ use parking_lot::RwLock;
 use crate::{bitmap::Bitmap, viewport::Viewport};
 
 pub struct Sprite {
-    pub bitmap: Option<Bitmap>,
+    pub bitmap: Option<Arc<Bitmap>>,
     pub viewport: Option<Arc<RwLock<Viewport>>>, // The sprite should keep the viewport alive, however the viewport should NOT keep the sprite alive
 }
 impl Sprite {
-    pub fn new() -> Self {
-        Self {
+    pub fn new(viewport: Option<Arc<RwLock<Viewport>>>) -> Arc<RwLock<Self>> {
+        Arc::new(RwLock::new(Self {
+            viewport,
             bitmap: None,
-            viewport: None,
-        }
-    }
-
-    pub fn from_viewport(viewport: Arc<RwLock<Viewport>>) -> Self {
-        Self {
-            bitmap: None,
-            viewport: Some(viewport),
-        }
+        }))
     }
 }
