@@ -15,6 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with rsgss.  If not, see <http://www.gnu.org/licenses/>.
 
+#[derive(Debug)]
 pub enum Error {
     NothingToRender,
     IoError(std::io::Error),

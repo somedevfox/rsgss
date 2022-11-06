@@ -20,14 +20,14 @@ use std::{
     time::{Duration, Instant},
 };
 
-use parking_lot::RwLock;
+use parking_lot::{RwLock, RwLockWriteGuard};
 use winit::{
     dpi::PhysicalSize,
     event_loop::EventLoop,
     window::{Window, WindowBuilder},
 };
 
-use crate::{result::Result, viewport::Viewport};
+use crate::{result::Result, sprite::Sprite, viewport::Viewport};
 
 pub struct Graphics {
     pub window: Window,
@@ -98,13 +98,6 @@ impl Graphics {
         };
         surface.configure(&device, &surface_config);
 
-        let window_viewport = Viewport::new(0.0, 0.0, width as f32, height as f32);
-        window_viewport.write().color.r = 0.0;
-        window_viewport.write().color.g = 0.0;
-        window_viewport.write().color.b = 0.0;
-        println!("{:?}", window_viewport.read().color);
-        let window_viewport = Arc::downgrade(&window_viewport);
-
         Self {
             window,
 
@@ -116,7 +109,7 @@ impl Graphics {
             size,
             title,
 
-            viewports: RwLock::new(vec![window_viewport]),
+            viewports: RwLock::new(vec![]),
 
             last_frame: RwLock::new(Instant::now()),
             frame_rate: RwLock::new(40),
@@ -150,13 +143,15 @@ impl Graphics {
                         .device
                         .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
                     {
-                        viewport.renderable.retain(|d| Weak::upgrade(d).is_some());
+                        viewport.renderable.retain(|d| d.upgrade().is_some());
 
                         let drawable: Vec<_> = viewport
                             .renderable
                             .iter_mut()
                             .map(|d| d.upgrade().unwrap())
                             .collect();
+
+                        let drawable: Vec<_> = drawable.iter().map(|d| d.write()).collect();
 
                         let mut render_pass =
                             encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
@@ -180,10 +175,11 @@ impl Graphics {
                             0.0,
                         );
 
-                        let _: Vec<_> = drawable
+                        let e: Vec<_> = drawable
                             .iter()
                             .map(|d| d.render(&mut render_pass, &self.queue))
                             .collect();
+                        println!("{:#?}", e)
                     }
 
                     self.queue.submit(std::iter::once(encoder.finish()));
@@ -204,10 +200,55 @@ impl Graphics {
     }
 }
 
-pub trait Renderable {
+pub trait RenderableTrait {
     fn render<'render>(
         &'render self,
         rpass: &mut wgpu::RenderPass<'render>,
         queue: &wgpu::Queue,
     ) -> Result<()>;
+}
+
+pub enum Renderable {
+    Sprite(Weak<RwLock<Sprite>>),
+}
+impl From<Weak<RwLock<Sprite>>> for Renderable {
+    fn from(value: Weak<RwLock<Sprite>>) -> Self {
+        Self::Sprite(value)
+    }
+}
+
+impl Renderable {
+    fn upgrade(&self) -> Option<UpgradedRenderable> {
+        match self {
+            Self::Sprite(s) => Weak::upgrade(s).map(|s| UpgradedRenderable::Sprite(s)),
+        }
+    }
+}
+
+enum UpgradedRenderable {
+    Sprite(Arc<RwLock<Sprite>>),
+}
+
+impl UpgradedRenderable {
+    fn write(&self) -> WritableRenderable {
+        match self {
+            Self::Sprite(s) => WritableRenderable::Sprite(s.write()),
+        }
+    }
+}
+
+enum WritableRenderable<'r> {
+    Sprite(RwLockWriteGuard<'r, Sprite>),
+}
+
+impl<'r> RenderableTrait for WritableRenderable<'r> {
+    fn render<'render>(
+        &'render self,
+        rpass: &mut wgpu::RenderPass<'render>,
+        queue: &wgpu::Queue,
+    ) -> Result<()> {
+        match self {
+            Self::Sprite(s) => s.render(rpass, queue),
+        }
+    }
 }

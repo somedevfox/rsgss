@@ -17,19 +17,19 @@
 #![warn(rust_2018_idioms, clippy::all)]
 
 use rsgss::{
-    bitmap::Bitmap, config::get_config, get_graphics, graphics::Graphics, sprite::Sprite, GRAPHICS,
+    bitmap::Bitmap, config::get_config, get_graphics, graphics::Graphics, sprite::Sprite,
+    viewport::Viewport, GRAPHICS,
 };
-use std::{
-    io::{stderr, Write},
-    path::Path,
-    sync::Arc,
-};
+use std::{path::Path, sync::Arc};
 use winit::{
     event::{Event, WindowEvent},
     event_loop::EventLoop,
 };
 
 fn main() {
+    #[cfg(debug_assertions)]
+    let _ = color_eyre::install();
+
     pollster::block_on(run());
 }
 
@@ -38,11 +38,7 @@ async fn run() {
     let config = get_config();
 
     if !Path::new("lib").exists() {
-        writeln!(
-            &mut stderr(),
-            "WARNING: Ruby Gems are missing, engine may crash."
-        )
-        .unwrap();
+        eprintln!("WARNING: Ruby Gems are missing, engine may crash.");
     }
 
     println!("Creating RGSS Thread...");
@@ -60,9 +56,10 @@ async fn run() {
     let _ = GRAPHICS.set(graphics);
     let graphics = get_graphics();
     println!("Created. Listening to window events..");
-    let sprite = Sprite::new(None);
+    let viewport = Viewport::new(0., 0., 640., 480.);
+    let sprite = Sprite::new(Some(viewport));
     let bitmap = Bitmap::from_image("astrabit_no_bg.png").unwrap();
-    sprite.write().set_bitmap(Arc::new(bitmap));
+    sprite.write().set_bitmap(Some(Arc::new(bitmap)));
 
     event_loop.run(move |event, _, control_flow| {
         control_flow.set_poll();

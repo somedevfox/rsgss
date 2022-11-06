@@ -14,14 +14,14 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with rsgss.  If not, see <http://www.gnu.org/licenses/>.
-use crate::{graphics::Renderable, GRAPHICS};
+use crate::{get_graphics, graphics::Renderable};
 
-use std::sync::{Arc, Weak};
+use std::sync::Arc;
 
 use parking_lot::RwLock;
 
 pub struct Viewport {
-    pub renderable: Vec<Weak<Box<dyn Renderable + Send + Sync>>>,
+    pub renderable: Vec<Renderable>,
 
     pub color: wgpu::Color,
 
@@ -43,7 +43,7 @@ impl Viewport {
         let viewport = Arc::new(RwLock::new(Self {
             renderable: vec![],
 
-            color: wgpu::Color::WHITE,
+            color: wgpu::Color::TRANSPARENT,
 
             z: 0,
             ox: x,
@@ -55,12 +55,7 @@ impl Viewport {
             visible: true,
         }));
 
-        match GRAPHICS.get() {
-            Some(graphics) => graphics.add_viewport(Arc::downgrade(&viewport)),
-            None => {
-                println!("[Viewport] This viewport has been created on window initialization")
-            }
-        }
+        get_graphics().add_viewport(Arc::downgrade(&viewport));
 
         viewport
     }

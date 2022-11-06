@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with rsgss.  If not, see <http://www.gnu.org/licenses/>.
 
-use std::{num::NonZeroU32, sync::Arc};
+use std::sync::Arc;
 
 use parking_lot::RwLock;
 use wgpu::util::DeviceExt;
@@ -23,7 +23,7 @@ use wgpu::util::DeviceExt;
 use crate::{
     bitmap::Bitmap,
     get_graphics,
-    graphics::Renderable,
+    graphics::{Renderable, RenderableTrait},
     result::{Error, Result},
     viewport::Viewport,
     Vertex,
@@ -43,12 +43,12 @@ pub struct Sprite {
 }
 impl Sprite {
     pub fn new(viewport: Option<Arc<RwLock<Viewport>>>) -> Arc<RwLock<Self>> {
-        let graphics = get_graphics();
+        // let graphics = get_graphics();
 
         let x = 0.0;
         let y = 0.0;
 
-        Arc::new(RwLock::new(Self {
+        let _self = Arc::new(RwLock::new(Self {
             x,
             y,
             ox: x,
@@ -57,34 +57,42 @@ impl Sprite {
             buffer: None,
             vertices_len: 0u32,
 
-            viewport,
+            viewport: viewport.clone(),
             bitmap: None,
-        }))
+        }));
+
+        if let Some(viewport) = viewport {
+            viewport
+                .write()
+                .renderable
+                .push(Renderable::from(Arc::downgrade(&_self)));
+        }
+
+        _self
     }
 
     /*pub fn get_bitmap(&self) -> Arc<Option<Arc<Bitmap>>> {
         self.bitmap
     }*/
-    pub fn set_bitmap(&mut self, bitmap: Arc<Bitmap>) -> Arc<Bitmap> {
-        let vertices: &[Vertex] = &[
+
+    pub fn set_bitmap(&mut self, bitmap: Option<Arc<Bitmap>>) {
+        let width = bitmap.as_ref().map_or(0, |b| b.size.width) as f32;
+        let height = bitmap.as_ref().map_or(0, |b| b.size.height) as f32;
+        let vertices: [Vertex; 4] = [
             Vertex {
                 position: [self.x, self.y, 0.],
                 color: [0., 0., 0., 0.],
             },
             Vertex {
-                position: [self.x + bitmap.size.width as f32, self.y, 0.],
+                position: [self.x + width, self.y, 0.],
                 color: [0., 0., 0., 0.],
             },
             Vertex {
-                position: [
-                    self.x + bitmap.size.width as f32,
-                    self.y - bitmap.size.height as f32,
-                    0.,
-                ],
+                position: [self.x + width, self.y - height, 0.],
                 color: [0., 0., 0., 0.],
             },
             Vertex {
-                position: [self.x, self.y - bitmap.size.height as f32, 0.],
+                position: [self.x, self.y - height, 0.],
                 color: [0., 0., 0., 0.],
             },
         ];
@@ -93,48 +101,32 @@ impl Sprite {
                 .device
                 .create_buffer_init(&wgpu::util::BufferInitDescriptor {
                     label: None,
-                    contents: bytemuck::cast_slice(vertices),
+                    contents: bytemuck::cast_slice(&vertices),
                     usage: wgpu::BufferUsages::VERTEX,
                 });
 
         self.buffer = Some(vertex_buffer);
         self.vertices_len = vertices.len() as u32;
 
-        bitmap
+        self.bitmap = bitmap;
     }
 }
 
-impl Renderable for Sprite {
+impl RenderableTrait for Sprite {
     fn render<'render>(
         &'render self,
         rpass: &mut wgpu::RenderPass<'render>,
         queue: &wgpu::Queue,
     ) -> Result<()> {
-        if self.bitmap.is_none() {
-            return Err(Error::NothingToRender);
-        }
-        let bitmap = self.bitmap.as_ref().unwrap();
+        match self.bitmap {
+            None => Err(Error::NothingToRender),
+            Some(ref bitmap) => {
+                rpass.set_bind_group(0, &bitmap.bind_group, &[]);
+                rpass.set_vertex_buffer(0, self.buffer.as_ref().unwrap().slice(..));
+                rpass.draw_indexed(0..self.vertices_len, 0, 0..1);
 
-        if bitmap.img.is_some() {
-            let img = bitmap.img.as_ref().unwrap();
-            queue.write_texture(
-                wgpu::ImageCopyTexture {
-                    texture: &bitmap.texture,
-                    mip_level: 0,
-                    origin: wgpu::Origin3d::ZERO,
-                    aspect: wgpu::TextureAspect::All,
-                },
-                &img,
-                wgpu::ImageDataLayout {
-                    offset: 0,
-                    bytes_per_row: NonZeroU32::new(4 * bitmap.size.width),
-                    rows_per_image: NonZeroU32::new(bitmap.size.height),
-                },
-                bitmap.size,
-            );
+                Ok(())
+            }
         }
-        rpass.set_bind_group(0, &bitmap.bind_group, &[]);
-
-        Ok(())
     }
 }

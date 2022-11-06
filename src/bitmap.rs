@@ -15,7 +15,7 @@
 // You should have received a copy of the GNU General Public License
 // along with rsgss.  If not, see <http://www.gnu.org/licenses/>.
 
-use image::RgbaImage;
+use std::num::NonZeroU32;
 
 use crate::{get_graphics, shader::Shader};
 
@@ -23,7 +23,6 @@ use crate::{get_graphics, shader::Shader};
 pub struct Bitmap {
     pub bind_group: wgpu::BindGroup,
     pub texture: wgpu::Texture,
-    pub img: Option<RgbaImage>,
 
     pub size: wgpu::Extent3d,
     pub shader: Option<Vec<Shader>>,
@@ -105,7 +104,6 @@ impl Bitmap {
         Self {
             bind_group,
             texture,
-            img: None,
 
             size,
             shader: None,
@@ -114,8 +112,24 @@ impl Bitmap {
 
     pub fn from_image(filename: &str) -> Result<Self, image::ImageError> {
         let image = image::open(filename)?;
-        let mut bitmap = Bitmap::new(image.width(), image.height());
-        bitmap.img = Some(image.to_rgba8());
+        let bitmap = Bitmap::new(image.width(), image.height());
+
+        get_graphics().queue.write_texture(
+            wgpu::ImageCopyTexture {
+                texture: &bitmap.texture,
+                mip_level: 0,
+                origin: wgpu::Origin3d::ZERO,
+                aspect: wgpu::TextureAspect::All,
+            },
+            &image.to_rgba8(),
+            wgpu::ImageDataLayout {
+                offset: 0,
+                bytes_per_row: NonZeroU32::new(4 * bitmap.size.width),
+                rows_per_image: NonZeroU32::new(bitmap.size.height),
+            },
+            bitmap.size,
+        );
+
         Ok(bitmap)
     }
 }
