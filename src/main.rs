@@ -16,10 +16,13 @@
 // along with rsgss.  If not, see <http://www.gnu.org/licenses/>.
 #![warn(rust_2018_idioms, clippy::all)]
 
-use rsgss::{config::get_config, get_graphics, graphics::Graphics, GRAPHICS};
+use rsgss::{
+    bitmap::Bitmap, config::get_config, get_graphics, graphics::Graphics, sprite::Sprite, GRAPHICS,
+};
 use std::{
     io::{stderr, Write},
     path::Path,
+    sync::Arc,
 };
 use winit::{
     event::{Event, WindowEvent},
@@ -57,6 +60,9 @@ async fn run() {
     let _ = GRAPHICS.set(graphics);
     let graphics = get_graphics();
     println!("Created. Listening to window events..");
+    let sprite = Sprite::new(None);
+    let bitmap = Bitmap::from_image("astrabit_no_bg.png").unwrap();
+    sprite.write().set_bitmap(Arc::new(bitmap));
 
     event_loop.run(move |event, _, control_flow| {
         control_flow.set_poll();

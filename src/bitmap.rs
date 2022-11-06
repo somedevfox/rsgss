@@ -15,11 +15,15 @@
 // You should have received a copy of the GNU General Public License
 // along with rsgss.  If not, see <http://www.gnu.org/licenses/>.
 
+use image::RgbaImage;
+
 use crate::{get_graphics, shader::Shader};
 
 #[allow(dead_code)]
 pub struct Bitmap {
-    bind_group: wgpu::BindGroup,
+    pub bind_group: wgpu::BindGroup,
+    pub texture: wgpu::Texture,
+    pub img: Option<RgbaImage>,
 
     pub size: wgpu::Extent3d,
     pub shader: Option<Vec<Shader>>,
@@ -100,9 +104,18 @@ impl Bitmap {
 
         Self {
             bind_group,
+            texture,
+            img: None,
 
             size,
             shader: None,
         }
+    }
+
+    pub fn from_image(filename: &str) -> Result<Self, image::ImageError> {
+        let image = image::open(filename)?;
+        let mut bitmap = Bitmap::new(image.width(), image.height());
+        bitmap.img = Some(image.to_rgba8());
+        Ok(bitmap)
     }
 }

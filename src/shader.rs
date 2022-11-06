@@ -32,7 +32,7 @@ pub struct Shader {
     pub name: String,
     pub source: String,
 
-    render_pipeline: wgpu::RenderPipeline,
+    pub render_pipeline: wgpu::RenderPipeline,
     shader_module: wgpu::ShaderModule,
 }
 

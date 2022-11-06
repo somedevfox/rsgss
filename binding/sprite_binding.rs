@@ -66,12 +66,12 @@ impl BoundSprite {
     pub fn set_bitmap(rb_self: Value, bitmap: Value) -> Result<(), magnus::Error> {
         let rb_self = RTypedData::from_value(rb_self).unwrap();
 
-        rb_self.try_convert::<&Self>()?.sprite.write().bitmap = bitmap
+        /*rb_self.try_convert::<&Self>()?.sprite.write().bitmap = bitmap
             .try_convert::<Option<&_>>()?
             .cloned()
             .map(BoundBitmap::into);
 
-        rb_self.ivar_set("@bitmap", bitmap)?;
+        rb_self.ivar_set("@bitmap", bitmap)?;*/
 
         Ok(())
     }

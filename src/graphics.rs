@@ -27,7 +27,7 @@ use winit::{
     window::{Window, WindowBuilder},
 };
 
-use crate::viewport::Viewport;
+use crate::{result::Result, viewport::Viewport};
 
 pub struct Graphics {
     pub window: Window,
@@ -140,7 +140,7 @@ impl Graphics {
 
         self.viewports.write().retain(|viewport| {
             if let Some(viewport) = viewport.upgrade() {
-                let viewport = viewport.read();
+                let mut viewport = viewport.write();
                 if viewport.visible {
                     let output = self.surface.get_current_texture().unwrap();
                     let view = output
@@ -150,6 +150,14 @@ impl Graphics {
                         .device
                         .create_command_encoder(&wgpu::CommandEncoderDescriptor { label: None });
                     {
+                        viewport.renderable.retain(|d| Weak::upgrade(d).is_some());
+
+                        let drawable: Vec<_> = viewport
+                            .renderable
+                            .iter_mut()
+                            .map(|d| d.upgrade().unwrap())
+                            .collect();
+
                         let mut render_pass =
                             encoder.begin_render_pass(&wgpu::RenderPassDescriptor {
                                 label: None,
@@ -171,6 +179,11 @@ impl Graphics {
                             0.0,
                             0.0,
                         );
+
+                        let _: Vec<_> = drawable
+                            .iter()
+                            .map(|d| d.render(&mut render_pass, &self.queue))
+                            .collect();
                     }
 
                     self.queue.submit(std::iter::once(encoder.finish()));
@@ -192,5 +205,9 @@ impl Graphics {
 }
 
 pub trait Renderable {
-    fn render(&mut self) -> (wgpu::BindGroup, wgpu::Buffer);
+    fn render<'render>(
+        &'render self,
+        rpass: &mut wgpu::RenderPass<'render>,
+        queue: &wgpu::Queue,
+    ) -> Result<()>;
 }
