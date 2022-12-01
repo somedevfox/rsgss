@@ -11,9 +11,9 @@ authors = [
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+log = "0.4.17"
+glium = "*"
 pollster = "0.2.5" # Block on async futures
-winit = "0.27.3" # Window Creation and Management
-wgpu = "0.14.0" # Graphics Rendering
 image = { version = "0.24.4", default-features = false, features = [
 	"png",
 	"jpeg",

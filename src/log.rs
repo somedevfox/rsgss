@@ -15,6 +15,4 @@
 // You should have received a copy of the GNU General Public License
 // along with rsgss.  If not, see <http://www.gnu.org/licenses/>.
 
-pub fn bind() -> Result<(), magnus::Error> {
-    Ok(())
-}
+use log::{Level, Log, Record};

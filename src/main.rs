@@ -16,14 +16,15 @@
 // along with rsgss.  If not, see <http://www.gnu.org/licenses/>.
 #![warn(rust_2018_idioms, clippy::all)]
 
-use rsgss::{
-    bitmap::Bitmap, config::get_config, get_graphics, graphics::Graphics, sprite::Sprite,
-    viewport::Viewport, GRAPHICS,
-};
-use std::{path::Path, sync::Arc};
-use winit::{
+use glium::glutin::{
     event::{Event, WindowEvent},
-    event_loop::EventLoop,
+    event_loop::{ControlFlow, EventLoop},
+};
+use rsgss::{config::get_config, graphics::Graphics};
+use std::{
+    path::Path,
+    sync::Arc,
+    time::{Duration, Instant},
 };
 
 fn main() {
@@ -50,42 +51,24 @@ async fn run() {
         config.window.width,
         config.window.height,
         &event_loop,
-    )
-    .await;
-
-    let _ = GRAPHICS.set(graphics);
-    let graphics = get_graphics();
+    );
     println!("Created. Listening to window events..");
-    let viewport = Viewport::new(0., 0., 640., 480.);
-    let sprite = Sprite::new(Some(viewport));
-    let bitmap = Bitmap::from_image("astrabit_no_bg.png").unwrap();
-    sprite.write().set_bitmap(Some(Arc::new(bitmap)));
 
-    event_loop.run(move |event, _, control_flow| {
-        control_flow.set_poll();
-
-        match event {
-            Event::WindowEvent {
-                event: WindowEvent::CloseRequested,
-                ..
-            } => {
-                println!("Engine exit was requested!");
-                println!("Shutting down...");
-                control_flow.set_exit();
-            }
+    event_loop.run(move |ev, elwt, control_flow| {
+        let next_frame_time = Instant::now() + Duration::from_nanos(16_666_667);
+        *control_flow = glium::glutin::event_loop::ControlFlow::WaitUntil(next_frame_time);
+        match ev {
+            Event::WindowEvent { window_id, event } => match event {
+                WindowEvent::CloseRequested => {
+                    *control_flow = ControlFlow::Exit;
+                    return;
+                }
+                _ => return,
+            },
             Event::MainEventsCleared => {
-                graphics.window.request_redraw();
+                graphics.update();
             }
-            Event::RedrawRequested(wid) if wid == graphics.window.id() => {
-                /*window.update();
-                match window.render() {
-                    Ok(_) => {},
-                    Err(wgpu::SurfaceError::Lost) => window.resize(window.size),
-                    Err(wgpu::SurfaceError::OutOfMemory) => *control_flow = ControlFlow::Exit,
-                    Err(e) => eprintln!("{:?}", e)
-                }*/
-            }
-            _ => {}
+            _ => (),
         }
     });
 }

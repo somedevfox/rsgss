@@ -1,3 +1,5 @@
+use super::{rect::Rect, viewport::Viewport};
+
 // Copyright (C) 2022 Egor Poleshko
 //
 // This file is part of rsgss.
@@ -14,16 +16,19 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with rsgss.  If not, see <http://www.gnu.org/licenses/>.
+pub struct Sprite {
+    pub rect: Rect,
+}
 
-use magnus::define_module;
-
-/*pub fn window_viewport() -> &'static Viewport {
-    &get_graphics().window_viewport.upgrade().unwrap().read().borrow()
-}*/
-
-pub fn bind() -> Result<(), magnus::Error> {
-    let _module = define_module("Window")?;
-    //module.define_module_function("viewport", function!(window_viewport, 0))?;
-
-    Ok(())
+impl Sprite {
+    /// Create a new `Sprite` and attach it to a `Viewport`.
+    pub fn new(viewport: &Viewport) -> Self {
+        let rect = Rect {
+            x: 0,
+            y: 0,
+            width: viewport.rect.width,
+            height: viewport.rect.height,
+        };
+        Self { rect }
+    }
 }

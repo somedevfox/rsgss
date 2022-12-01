@@ -14,8 +14,10 @@
 //
 // You should have received a copy of the GNU General Public License
 // along with rsgss.  If not, see <http://www.gnu.org/licenses/>.
-
+//! rsgss - Rust Implementation of the Ruby Game Scripting System
+#![warn(missing_docs)]
 use bytemuck::{Pod, Zeroable};
+use glium::implement_vertex;
 use graphics::Graphics;
 use once_cell::sync::OnceCell;
 use std::mem::size_of;
@@ -25,40 +27,11 @@ pub mod binding_util;
 pub mod bitmap;
 pub mod config;
 pub mod graphics;
+pub mod log;
 pub mod result;
 pub mod rgss;
-pub mod shader;
-pub mod sprite;
-pub mod viewport;
 
-pub static GRAPHICS: OnceCell<Graphics> = OnceCell::new();
+/*pub static GRAPHICS: OnceCell<Graphics> = OnceCell::new();
 pub fn get_graphics() -> &'static Graphics {
     GRAPHICS.get().unwrap()
-}
-
-#[repr(C)]
-#[derive(Copy, Clone, Debug, Pod, Zeroable)]
-pub struct Vertex {
-    pub position: [f32; 3],
-    pub color: [f32; 4],
-}
-impl Vertex {
-    pub fn desc<'a>() -> wgpu::VertexBufferLayout<'a> {
-        wgpu::VertexBufferLayout {
-            array_stride: size_of::<Self>() as wgpu::BufferAddress,
-            step_mode: wgpu::VertexStepMode::Vertex,
-            attributes: &[
-                wgpu::VertexAttribute {
-                    offset: 0,
-                    shader_location: 0,
-                    format: wgpu::VertexFormat::Float32x3,
-                },
-                wgpu::VertexAttribute {
-                    offset: size_of::<[f32; 3]>() as wgpu::BufferAddress,
-                    shader_location: 1,
-                    format: wgpu::VertexFormat::Float32x3,
-                },
-            ],
-        }
-    }
-}
+}*/
