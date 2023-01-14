@@ -1,0 +1,6 @@
+[log]
+format = "%l %t > %m"
+
+[log.colors]
+info = [147, 112, 219]
+trace = [127, 255, 212]

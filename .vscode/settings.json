@@ -1,7 +1,3 @@
 {
-	"licenser.license": "GPLv3",
-	"rust-analyzer.cargo.features": [
-		"file-picker"
-	],
-	"editor.formatOnSave": true
+	"licenser.license": "GPLv3"
 }
