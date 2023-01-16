@@ -18,14 +18,18 @@
 use std::{sync::Arc, num::NonZeroU32};
 use once_cell::sync::OnceCell;
 use parking_lot::RwLock;
-use glium::{glutin::{dpi::LogicalSize, event_loop::EventLoop, window::WindowBuilder, ContextBuilder}, Display};
+use wgpu::{Instance, Backends};
+use winit::{
+	window::WindowBuilder,
+	event_loop::EventLoop
+};
 
 pub static mut WINDOW: OnceCell<Window> = OnceCell::new();
 
 #[derive(Debug)]
 pub struct Window {
-	pub(crate) event_loop: Arc<EventLoop<()>>,
-	pub(crate) display: RwLock<Arc<Display>>
+	pub(crate) raw: Arc<winit::window::Window>,
+	pub(crate) event_loop: Arc<EventLoop<()>>
 }
 unsafe impl Send for Window {}
 unsafe impl Sync for Window {}
@@ -39,23 +43,14 @@ impl Window {
 
 	pub fn new(title: impl Into<String>) -> Self {
 		let event_loop = EventLoop::new();
-		let window_builder = WindowBuilder::new()
-			.with_title(title.into());
-		let context_builder = ContextBuilder::new();
-		let display = Display::new(window_builder, context_builder, &event_loop).unwrap();
-
-		let display = RwLock::new(Arc::new(display));
-		let event_loop = Arc::new(event_loop);
+		let window = WindowBuilder::new()
+			.with_title(title.into())
+			.build(&event_loop)
+			.unwrap();
 
 		Self {
-			event_loop,
-			display
+			raw: Arc::new(window),
+			event_loop: Arc::new(event_loop)
 		}
-	}
-
-	pub fn is_visible(&self) -> bool {
-		let display = self.display.read();
-		let window = display.gl_window();
-		window.window().is_visible().unwrap_or(false)
 	}
 }

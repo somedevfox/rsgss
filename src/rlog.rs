@@ -67,6 +67,9 @@ impl log::Log for Logger {
 		if !self.enabled(record.metadata()) {
 			return;
 		}
+		if record.target().starts_with("wgpu") {
+			return;
+		}
 
 		let colors = &self.config.colors;
 

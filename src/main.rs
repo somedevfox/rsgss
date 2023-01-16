@@ -6,7 +6,7 @@ use std::{process, thread};
 
 #[cfg(feature = "config")]
 use figment::{Figment, providers::{Serialized, Toml, Format}};
-use rsgss::graphics::{Window, Graphics, window::WINDOW};
+use rsgss::graphics::{Window, Graphics, window::WINDOW, GRAPHICS};
 use crate::config::Config;
 
 pub const CONFIG_FILE_NAME: &str = "rsgss.toml";
@@ -16,6 +16,10 @@ pub mod rlog;
 pub mod config;
 
 fn main() {
+    pollster::block_on(run());
+}
+
+async fn run() {
     #[allow(unused_assignments)]
     let mut config = Config::default();
 
@@ -40,15 +44,17 @@ fn main() {
 
     trace!("Spawning a window...");
     let window = Window::new(config.app.title);
-    let graphics = Graphics::new();
-
     unsafe { WINDOW.set(window) }.unwrap();
+    let graphics = Graphics::new().await;
+    unsafe { GRAPHICS.set(graphics) }.unwrap();
+    let graphics = Graphics::get();
 
-    let gl_version = graphics.gl.version();
-    info!("Graphics Processing Unit: {}", graphics.gl.device());
-    info!("OpenGL Vendor: {}", graphics.gl.vendor());
-    info!("OpenGL Version: {}.{}", gl_version.0, gl_version.1);
-    info!("OpenGL Application Programming Interface: {:?}", graphics.gl.api());
+    let gpu = graphics.get_graphics_unit_info();
+    info!("Graphics Processing Unit Information:");
+    info!("\tBackend: {:?}", gpu.backend);
+    info!("\tName: {}", gpu.name);
+    info!("\tType: {:?}", gpu.device_type);
+    info!("\tDriver: {} {}", gpu.driver, gpu.driver_info);
 
     let rgss_thread = thread::Builder::new()
         .name("rgss thread".into())
