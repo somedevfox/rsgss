@@ -1,29 +1,6 @@
-[package]
-name = "rsgss"
-version = "0.1.0"
-edition = "2021"
-authors = [
-	"Egor Poleshko",
-	"Lily Lyons"
+[workspace]
+resolver = "2"
+members = [
+	"launcher",
+	"graphics"
 ]
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
-
-[dependencies]
-winit = "0.27.5"
-wgpu = "0.14.2"
-serde = { version = "1", features = ["derive"] }
-parking_lot = "0.12.1"
-once_cell = "1.17.0"
-pollster = "0.2.5"
-bytemuck = { version = "1.12.3", features = ["derive"] }
-
-log = { version = "0.4.17", features = ["std"], optional = true }
-owo-colors = { version = "3.5.0", optional = true }
-figment = { version = "0.10.8", features = ["toml", "env"], optional = true } 
-
-[features]
-default = ["log", "config"]
-
-log    = ["dep:log", "dep:owo-colors"]
-config = ["dep:figment"]
