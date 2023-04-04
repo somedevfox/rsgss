@@ -35,10 +35,6 @@
    OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 */
 //! Graphics rendering library for the `rsgss` game engine.
-//!
-//! **WARNING**: This crate REQUIRES nightly compiler, as it uses the `impl_trait_projections` feature.
-
-#![feature(impl_trait_projections)]
 #![warn(clippy::all)]
 #![deny(missing_debug_implementations)]
 
