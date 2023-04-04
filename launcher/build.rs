@@ -37,8 +37,14 @@
 use std::env;
 
 fn main() {
-    if Ok("windows") == env::var("CARGO_CFG_TARGET_OS").as_deref() {
-        embed_manifest::embed_manifest_file("rsgss.manifest.xml").unwrap();
+    #[cfg(windows)]
+    {
+        use winres::WindowsResource;
+
+        WindowsResource::new()
+            .set_manifest_file("rsgss.manifest.xml")
+            .compile()
+            .unwrap();
     }
 
     println!("cargo:rerun-if-changed=rsgss.manifest.xml");

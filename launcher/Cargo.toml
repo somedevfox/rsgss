@@ -18,8 +18,8 @@ tokio = { version = "1.27.0", features = ["macros", "rt-multi-thread"] }
 
 rsgss-graphics = { path = "../graphics" }
 
-[build-dependencies]
-embed-manifest = "1.3.1"
+[target.'cfg(windows)'.build-dependencies]
+winres = "0.1.12"
 
 [[bin]]
 name = "rsgss"

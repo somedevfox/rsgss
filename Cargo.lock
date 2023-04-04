@@ -495,12 +495,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7fcaabb2fef8c910e7f4c7ce9f67a1283a1715879a7c230ca9d6d1ae31f16d91"
 
 [[package]]
-name = "embed-manifest"
-version = "1.3.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "40ff574b0b0a794f8995383bb83f21f8f99214422cae791cb48d66da524b00f7"
-
-[[package]]
 name = "env_logger"
 version = "0.7.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1745,7 +1739,6 @@ dependencies = [
 name = "rsgss"
 version = "0.1.0"
 dependencies = [
- "embed-manifest",
  "figment",
  "log",
  "pretty_env_logger",
@@ -1753,6 +1746,7 @@ dependencies = [
  "rsgss-graphics",
  "serde",
  "tokio",
+ "winres",
 ]
 
 [[package]]
@@ -2593,6 +2587,15 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ae8970b36c66498d8ff1d66685dc86b91b29db0c7739899012f63a63814b4b28"
 dependencies = [
  "memchr",
+]
+
+[[package]]
+name = "winres"
+version = "0.1.12"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b68db261ef59e9e52806f688020631e987592bd83619edccda9c47d42cde4f6c"
+dependencies = [
+ "toml 0.5.11",
 ]
 
 [[package]]
