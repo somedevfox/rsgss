@@ -1,0 +1,6 @@
+{
+	"licenser.license": "Custom",
+	"licenser.disableAutoHeaderInsertion": true,
+	"editor.formatOnSave": true,
+	"rust-analyzer.showUnlinkedFileNotification": false
+}
